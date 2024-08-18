@@ -51,47 +51,33 @@
 // each element of array A is an integer within the range [1..N + 1].
 
 // you can use includes, for example:
-// #include <algorithm>
-
+#include <algorithm>
+#include <vector>
 // you can write to stdout for debugging purposes, e.g.
 // cout << "this is a debug message" << endl;
-
-void increase(int &x)
-{
-    x+=1;
-}
-
-void max_counter(vector<int> &V, int &max)
-{
-    int i = 0;
-    int len = V.size();
-    for(i=0; i<len; i++)
-    {
-        V[i] = max;
-    }
-}
+using namespace std;
 
 vector<int> solution(int N, vector<int> &A) {
     // Implement your solution here
-
-    vector<int> counters(N, 0);
-    int max_cnt = 0;
-
+    vector<int> max_counter(N);
+    int max_num = 0;
+    bool max_cnt = false;
     for(auto& el : A)
     {
-        if(el <= N)
+        if (el <= N && el >= 1)
         {
-            increase(counters[el-1]);
-            if (counters[el-1] > max_cnt)
+            max_counter[el - 1]++;
+            if (max_counter[el - 1] > max_num)
             {
-                max_cnt = counters[el-1];
+                max_num = max_counter[el - 1];
+                max_cnt = true;
             }
         }
-        else if (el == N+1)
+        else if (el == N + 1 && max_cnt)
         {
-            max_counter(counters, max_cnt);
+            fill(max_counter.begin(), max_counter.end(), max_num);
+            max_cnt = false;
         }
     }
-
-    return counters;
+    return max_counter;
 }

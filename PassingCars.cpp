@@ -46,46 +46,25 @@
 
 int solution(vector<int> &A) {
     // Implement your solution here
+    int num_pairs = 0;
+    int east_headed_cars = 0;
 
-    vector<int> east_tracker;
-    vector<int> west_tracker;
-    vector<pair<int, int>> result;
-
-    int len = A.size();
-    for(int i=0; i<len; i++)
+    for(auto& el : A)
     {
-        if(A[i] == 0)
+        if (el == 0)
         {
-            east_tracker.push_back(i);
+            east_headed_cars++;
         }
-        else if(A[i] == 1)
+        else if (el == 1)
         {
-            west_tracker.push_back(i);
+            num_pairs += east_headed_cars;
         }
-    }
 
-    for(auto& east_key : east_tracker)
-    {
-        for(auto& west_key : west_tracker)
+        if (num_pairs > 1000000000)
         {
-            if(east_key < west_key)
-            {
-                result.push_back(make_pair(east_key, west_key));
-            }
-            else
-            {
-                continue;
-            }
+            return -1;
         }
     }
 
-    int pair_length = result.size();
-    if (pair_length > 1000000)
-    {
-        return -1;
-    }
-    else
-    {
-        return pair_length;
-    }
+    return num_pairs;
 }

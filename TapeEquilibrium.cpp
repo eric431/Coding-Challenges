@@ -41,53 +41,39 @@
 // each element of array A is an integer within the range [−1,000..1,000].
 
 // you can use includes, for example:
-#include <algorithm>
-
+// #include <algorithm>
+#include <limits>
+#include <vector>
 // you can write to stdout for debugging purposes, e.g.
 // cout << "this is a debug message" << endl;
 
-int sum(vector<int> &in)
-{
-    int sum=0;
-    for(auto& el : in)
-    {
-        sum+=el;
-    }
-    return sum;
-}
-
-vector<int> slice(auto begin, auto end)
-{
-    vector<int> output(end-begin);
-    copy(begin, end, output.begin());
-
-    // for(auto& el : output)
-    // {
-    //     cout << el << " ";
-    // }
-    // cout << endl;
-    return output;
-}
+using namespace std;
 
 int solution(vector<int> &A) {
     // Implement your solution here
-    // vector<int> partition_tracker;
-    int diff = 2000000;
-    int diff2;
+    int cum_sum = 0, len = A.size(), idx = 0;
+    int min_diff = numeric_limits<int>::max(), diff = 0;
+    vector<int> p_sum(len);
 
-    for(auto itr = A.begin()+1; itr != A.end(); itr++)
+    for(auto& el : A)
     {
-        auto lower_part = slice(A.begin(), itr);
-        auto upper_part = slice(itr, A.end());
-
-        // partition_tracker.push_back(abs(sum(lower_part)-sum(upper_part)));
-        diff2 = abs(sum(lower_part)-sum(upper_part));
-        if(diff2<diff)
-        {
-            diff = diff2;
-        }
+        cum_sum += el;
+        p_sum[idx] = cum_sum;
+        idx++;
     }
-    // sort(partition_tracker.begin(), partition_tracker.end());
-    // return partition_tracker[0];
-    return diff;
+
+    idx = 0;
+    for(auto& el : p_sum)
+    {
+        diff = abs(el - (cum_sum - el));
+
+        if (diff < min_diff && idx < len - 1)
+        {
+            min_diff = diff;
+        }
+
+        idx++;
+    }
+
+    return min_diff;
 }
