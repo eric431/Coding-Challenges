@@ -6,6 +6,8 @@
         "xtree": "cpp",
         "utility": "cpp",
         "iterator": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "ctime": "cpp",
+        "xlocale": "cpp"
     }
 }
