@@ -1,67 +1,122 @@
+/*
+Given  arrays  of different sizes, find the number of distinct triplets  where  is an element of , written as , , and , satisfying the criteria: .
+
+For example, given  and , we find four distinct triplets: .
+
+Function Description
+
+Complete the triplets function in the editor below. It must return the number of distinct triplets that can be formed from the given arrays.
+
+triplets has the following parameter(s):
+
+a, b, c: three arrays of integers .
+Input Format
+
+The first line contains  integers , the sizes of the three arrays.
+The next  lines contain space-separated integers numbering  respectively.
+
+Constraints
+
+
+
+Output Format
+
+Print an integer representing the number of distinct triplets.
+
+Sample Input 0
+
+3 2 3
+1 3 5
+2 3
+1 2 3
+Sample Output 0
+
+8 
+Explanation 0
+
+The special triplets are  .
+
+Sample Input 1
+
+3 3 3
+1 4 5
+2 3 3
+1 2 3
+Sample Output 1
+
+5 
+Explanation 1
+
+The special triplets are 
+
+Sample Input 2
+
+4 3 4
+1 3 5 7
+5 7 9
+7 9 11 13
+Sample Output 2
+
+12
+Explanation 2
+
+The special triplets are .
+*/
+
 #include <bits/stdc++.h>
 
 using namespace std;
 
 vector<string> split_string(string);
 
-void search(const vector<int>& v1, int el, map<int, int>& pq_map)
-{
-    auto lb1 = lower_bound(v1.begin(), v1.end(), el);
-    if(lb1 == v1.end()) return;
-    
-    int pos_i{lb1 - v1.begin()};
-    pq_map[el] = pos_i;
-}
-
 // Complete the triplets function below.
 long triplets(vector<int> a, vector<int> b, vector<int> c) {
-    // sort all vectors with time complexity O(nlogn)
-    set<int> set_a(a.begin(), a.end());
-    a.assign(set_a.begin(), set_a.end());
+    {
+        set<int> set_a(a.begin(), a.end());
+        a.assign(set_a.begin(), set_a.end());
+        
+        set<int> set_b(b.begin(), b.end());
+        b.assign(set_b.begin(), set_b.end());
+        
+        set<int> set_c(c.begin(), c.end());
+        c.assign(set_c.begin(), set_c.end());        
+    }
     
-    set<int> set_b(b.begin(), b.end());
-    b.assign(set_b.begin(), set_b.end());
-    
-    set<int> set_c(c.begin(), c.end());
-    c.assign(set_c.begin(), set_c.end());
-    
-    map<int, int> pq_map{};
+    map<int, long> b_freq_map{};
     for(auto i = 0; i < a.size(); ++i)
     {
-        search(b, a[i], pq_map);
-    }
-    
-    map<int, long> qr_map{};
-    int q_end {pq_map.begin()->second};
-    long suffix_sum {0};
-    for(int j = b.size() - 1; j >= q_end; --j)
-    {
-        auto lb2 = lower_bound(c.begin(), c.end(), b[j]);
-        
-        if(*lb2 > b[j] && lb2 != c.begin())
+        auto b_itr = lower_bound(b.begin(), b.end(), a[i]);
+        if(b_itr != b.end())
         {
-            suffix_sum += (lb2 - c.begin());
+            int j = b_itr - b.begin();
+            ++b_freq_map[j];
         }
-        else if(*lb2 == b[j])
-        {
-            suffix_sum += (lb2 - c.begin()) + 1;
-        }
-        qr_map[b[j]] = suffix_sum;
     }
     
-    // for(auto el : qr_map)
-    // {
-    //     cout << el.first << " " << el.second << endl;
-    // }
-    
-    long cnt {0};
-    for(auto& kv : pq_map)
+    int k{0};
+    long num_of_distinct_triplets{0};
+    map<int, long> cnt_cache{};
+    long mul{0};
+    for(auto i = b_freq_map.begin()->first; i < b.size(); ++i)
     {
-        cout << kv.first << " " << b[kv.second] << " " << qr_map[b[kv.second]] << endl;
-        cnt += qr_map[b[kv.second]];
+        auto c_itr = lower_bound(c.begin(), c.end(), b[i]);
+        if(c_itr == c.end() || *c_itr != b[i])
+        {
+            k = c_itr - c.begin(); 
+        }
+        else
+        {
+            k = c_itr - c.begin() + 1;   
+        }
+            
+        long cnt_tmp = max(0, k);
+        if(b_freq_map.count(i) > 0)
+        {
+            mul += b_freq_map[i];
+        }      
+        num_of_distinct_triplets += cnt_tmp * mul; 
     }
-
-    return cnt;
+    return num_of_distinct_triplets;
 }
 
 int main()

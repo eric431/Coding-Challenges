@@ -1,3 +1,72 @@
+/*
+We define the following:
+
+A subarray of array  of length  is a contiguous segment from  through  where .
+The sum of an array is the sum of its elements.
+Given an  element array of integers, , and an integer, , determine the maximum value of the sum of any of its subarrays modulo .
+
+Example
+
+
+The following table lists all subarrays and their moduli:
+
+		sum	%2
+[1]		1	1
+[2]		2	0
+[3]		3	1
+[1,2]		3	1
+[2,3]		5	1
+[1,2,3]		6	0
+The maximum modulus is .
+
+Function Description
+
+Complete the maximumSum function in the editor below.
+
+maximumSum has the following parameter(s):
+
+long a[n]: the array to analyze
+long m: the modulo divisor
+Returns
+- long: the maximum (subarray sum modulo )
+
+Input Format
+
+The first line contains an integer , the number of queries to perform.
+
+The next  pairs of lines are as follows:
+
+The first line contains two space-separated integers  and (long), the length of  and the modulo divisor.
+The second line contains  space-separated long integers .
+Constraints
+
+ the sum of  over all test cases 
+Sample Input
+
+STDIN       Function
+-----       --------
+1           q = 1
+5 7         a[] size n = 5, m = 7
+3 3 9 9 5
+Sample Output
+
+6
+Explanation
+
+The subarrays of array  and their respective sums modulo  are ranked in order of length and sum in the following list:
+
+ and 
+ and 
+
+
+
+
+
+
+The maximum value for  for any subarray is 
+*/
+
+
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -14,67 +83,56 @@ vector<string> split(const string &);
  *  1. LONG_INTEGER_ARRAY a
  *  2. LONG_INTEGER m
  */
- 
-long search(const vector<long>& pSum, long i, long el)
-{
-    auto idx = lower_bound(pSum.begin(), pSum.begin() + i, el);
-    return *idx;
-}
-
 long maximumSum(vector<long> a, long m) {
     long maxSum{0};
-    long cumSum{0};
-    long modSum{0};
-    long idx{0};
-
-    // long min_ = numeric_limits<long>::max();
-
-    vector<long> pSum(a.size());    
-    for(long i{0}; i < a.size(); ++i)
+    vector<long> pSum(a.size());
+    vector<long> modSum;
+    
+    unordered_map<long, vector<long>> mod_idx_map{};
+    long cum_sum{0};
+    for(auto i = 0; i < a.size(); ++i)
     {
-        // min_ = min(min_, a[i]);
-        
-        cumSum += a[i];
-        pSum[i] = cumSum;
-        
-        if(cumSum < m)
-            ++idx;
-        
-        modSum = pSum[i] % m;
-        maxSum = max(maxSum, modSum);
+        cum_sum += a[i];
+        pSum[i] = cum_sum;
+        long m_ = cum_sum % m;
+        if(mod_idx_map.count(m_) == 0)
+        {
+            maxSum = max(maxSum, m_);
+            modSum.push_back(m_);
+        }
+        mod_idx_map[m_].push_back(i);
     }
- 
-    long sub{0}, el{0};
-    long j{0};
+    sort(modSum.begin(), modSum.end());
     
-    // long incr = min_ - (min_ % m);
-    // incr = max(incr, m);
-    
-    if(idx != 0)
-        for(long i{idx}; i < pSum.size(); ++i)
+    long mod_key{0};
+    for(auto i = 1; i < pSum.size(); ++i)
+    {
+        mod_key = (pSum[i] - (m - 1)) % m;
+        if(mod_key >= 0)
         {
-            sub = m - 1;
-            while(sub < pSum[i])
+            auto mod_value = lower_bound(modSum.begin(), modSum.end(), mod_key);
+            if(mod_value == modSum.end()) mod_value = modSum.begin();
+            if(*mod_value == mod_key && mod_idx_map[*mod_value][0] < i)
             {
-                el = pSum[i] - sub;
-                j = search(pSum, i, el);
-
-                modSum = (pSum[i] - j) % m;
-                maxSum = max(maxSum, modSum);            
-                
-                sub += m;
+                maxSum = m - 1;
+                break;
             }
-        }
-    else if(idx == 0)
-        for(long i = idx; i < pSum.size(); ++i)
-        {
-            for(long j = 0; j < i; ++j)
+            else 
             {
-                modSum = (pSum[i] - pSum[j]) % m;
-                maxSum = max(maxSum, modSum);
+                while(mod_idx_map[*mod_value][0] >= i)
+                {
+                    
+                    advance(mod_value, 1);
+                    if(mod_value == modSum.end())
+                    {
+                        mod_value = modSum.begin();
+                    }
+                }
+                auto maxSum_i = (pSum[i] - pSum[mod_idx_map[*mod_value][0]]) % m;
+                maxSum = max(maxSum, maxSum_i);
             }
-        }
-
+        }       
+    }
     return maxSum;
 }
 
