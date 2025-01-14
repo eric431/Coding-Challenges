@@ -14,82 +14,83 @@ string rtrim(const string &);
  *  2. STRING words
  */
 
-// void traversePuzzleRcs(const vector<string>& crossword, const map<int, vector<string>>& str_map, 
-// pair<int, int> cell, set<pair<int, int>>& visited_cells)
-// {
-//     if(cell.first >= crossword.size() || cell.second >= crossword[0].size())
-//         return;
-        
-//     if(crossword[cell.first][cell.second] == '-')
-//     {
-//         pair<int, int> new_cell = make_pair(cell.first, cell.second + 1);
-//         traversePuzzleRcs(crossword, str_map, new_cell, visited_cells); 
-        
-//         new_cell = make_pair(cell.first + 1, cell.second);
-//         traversePuzzleRcs(crossword, str_map, new_cell, visited_cells);
-//     }
-// }
-
 vector<string> crosswordPuzzle(vector<string> crossword, string words) {
-    // breakup word into individual words;
-    words += ';';
-    map<int, vector<string>> str_map{};
-    string str_tmp;
-    int start{0}, len{0};
-    for(auto i = 0; i < words.size(); ++i)
-    {
-        if(words[i] == ';')
-        {
-            len = i - start;
-            str_tmp = words.substr(start, len);
-            start = i + 1;
-            
-            str_map[len].emplace_back(str_tmp);
-        }
-    }
+    vector<int> row(crossword[0].size());
+    vector<vector<int>> horizontal_words(crossword.size(), row);
+    vector<vector<int>> vertical_words(crossword.size(), row);
     
-    map<int, vector<pair<int, int>>> v_map;
-    map<int, vector<pair<int, int>>> h_map;
-
-    set<pair<int, int>> visited_cells;
-    // traverse through crossword and solve unique problems first
-    for(auto i = 0; i < crossword.size(); ++i)
+    auto delimit_string = [&](string& words)
     {
-        for(auto j = 0; j < crossword[i].size(); ++j)
+        words += ';';
+        unordered_map<int, vector<string>> words_;
+        int i{0}, j{0};
+        for(; j < words.size(); ++j)
         {
-            if(visited_cells.count(make_pair(i, j)) == 0 && crossword[i][j] == '-')
+            if(words[j] == ';')
             {
-                if(crossword[i][j + 1] == '-')
-                {
-                    int j_itr = j;
-                    int cnt{0};
-                    while(j_itr < crossword[i].size() && crossword[i][j_itr] == '-')
-                    {
-                        ++j_itr;
-                        ++cnt;
-                        visited_cells.insert(make_pair(i, j));
-                    }
-                    h_map[cnt].push_back(make_pair(i, j));
-                    
-                    j = --j_itr;
-                } 
-                else if(crossword[i + 1][j] == '-')
-                {
-                    int i_itr = i;
-                    int cnt{0};
-                    while(i_itr < crossword.size() && crossword[i_itr][j] == '-')
-                    {
-                        ++i_itr;
-                        ++cnt;
-                        visited_cells.insert(make_pair(i, j));
-                    }
-                    v_map[cnt].push_back(make_pair(i, j));                
-                }
+                auto word_ = words.substr(i, j - i);
+                i = j + 1;                
+                words_[word_.size()].push_back(word_);
+            }
+        }
+        return words;
+    };   
+    auto words_ = delimit_string(words);
+    
+    int h_cnt{0};
+    for(int r = crossword.size() - 1; r > -1; --r)
+    {
+        for(int c = crossword[r].size() - 1; c > -1; --c)
+        {
+            h_cnt = 0;
+            while(crossword[r][c] == '-' && c > -1)
+            {
+                horizontal_words[r][c] = (++h_cnt);
+                
+                if(r < crossword.size() - 1)
+                    vertical_words[r][c] = vertical_words[r + 1][c] + 1;
+                else if (r == crossword.size() - 1)
+                    vertical_words[r][c] = 1;
+                --c;
             }
         }
     }
     
-    return {};
+    // for(auto el : vertical_words)
+    // {
+    //     for(auto el_ : el)
+    //     {
+    //         cout << el_ << " ";
+    //     }
+    //     cout << endl;
+    // }
+    // cout << endl;
+    
+    // for(auto el : horizontal_words)
+    // {
+    //     for(auto el_ : el)
+    //     {
+    //         cout << el_ << " ";
+    //     }
+    //     cout << endl;
+    // }
+    
+    for(auto r{0}; r < crossword.size(); ++r)
+    {
+        for(auto c{0}; c < crossword[r].size(); ++c)
+        {
+            if(horizontal_words[r][c] > 0 || vertical_words[r][c] > 0)
+            {
+                if(words_[horizontal_words[r][c]].size() == 1)
+                {
+                    
+                }
+                else if(words_[horizontal_words[r][c]].size() > 1)
+            }
+        }
+    }
+    
+    return{};
 }
 
 int main()
