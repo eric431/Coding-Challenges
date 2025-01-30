@@ -1,3 +1,61 @@
+/*
+You are given a square grid with some cells open (.) and some blocked (X). Your playing piece can move along any row or column until it reaches the edge of the grid or a blocked cell. Given a grid, a start and a goal, determine the minmum number of moves to get to the goal.
+
+Example.
+
+
+
+
+
+
+The grid is shown below:
+
+...
+.X.
+...
+The starting position  so start in the top left corner. The goal is . The path is . It takes  moves to reach the goal.
+
+Function Description
+Complete the minimumMoves function in the editor.
+
+minimumMoves has the following parameter(s):
+
+string grid[n]: an array of strings that represent the rows of the grid
+int startX: starting X coordinate
+int startY: starting Y coordinate
+int goalX: ending X coordinate
+int goalY: ending Y coordinate
+Returns
+
+int: the minimum moves to reach the goal
+Input Format
+
+The first line contains an integer , the size of the array grid.
+Each of the next  lines contains a string of length .
+The last line contains four space-separated integers, 
+
+Constraints
+
+Sample Input
+
+STDIN       FUNCTION
+-----       --------
+3           grid[] size n = 3
+.X.         grid = ['.X.','.X.', '...']
+.X.
+...
+0 0 0 2     startX = 0, startY = 0, goalX = 0, goalY = 2
+Sample Output
+
+3
+Explanation
+
+Here is a path that one could follow in order to reach the destination in  steps:
+
+.
+*/
+
+
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -18,169 +76,110 @@ vector<string> split(const string &);
  *  5. INTEGER goalY
  */
 
-struct pos
-{
-    int X;
-    int Y;
-};
+using cell = pair<int, int>;
 
-struct m_hist
+void update_queue(vector<string>& grid, vector<vector<int>>& path_cache, cell curr_cell, queue<cell>& q, set<cell>& v)
 {
-    pos prev, curr;
-    bool x_move, y_move;
-    int cnt;
-    set<pair<int, int>> path
-
-    
-    m_hist(pos prev, pos curr) : prev(prev), curr(curr)
+    if(curr_cell.first - 1 > -1 && grid[curr_cell.first - 1][curr_cell.second] != 'X')
     {
-        x_move = abs(curr.X - prev.X) > 0;
-        y_move = abs(curr.Y - prev.Y) > 0;
+        cell north = make_pair(curr_cell.first - 1, curr_cell.second);
+        if(!v.count(north)) q.push(north);
     }
-};
+    if(curr_cell.first + 1 < grid.size() && grid[curr_cell.first + 1][curr_cell.second] != 'X')
+    {
+        cell south = make_pair(curr_cell.first + 1, curr_cell.second);
+        if(!v.count(south)) q.push(south);
+    }
+    if(curr_cell.second - 1 > -1 && grid[curr_cell.first][curr_cell.second - 1] != 'X')
+    {
+        cell west = make_pair(curr_cell.first, curr_cell.second - 1);
+        if(!v.count(west)) q.push(west);
+    }
+    if(curr_cell.second + 1 < grid[0].size() && grid[curr_cell.first][curr_cell.second + 1] != 'X')
+    {
+        cell east = make_pair(curr_cell.first, curr_cell.second + 1);
+        if(!v.count(east)) q.push(east);
+    }
+}
 
-// void DFS_move(set<set<pair<int, int>>>& visited_paths, map<set<pair<int, int>>, int>& cache, 
-// vector<string>& grid, m_hist m, pos goal, int cnt, set<pair<int, int>> path, stack<m_hist>& to_be_visited)
-void DFS_move(set<m_hist>& visited_paths, map<set<pair<int, int>>, int>& cache, 
-vector<string>& grid, m_hist m, pos goal, stack<m_hist>& to_be_visited)
+void castle_bfs(vector<string>& grid, vector<vector<int>>& path_cache, cell curr_, cell goal, queue<cell>& q, set<cell>& v)
 {
-    cout << "( " << m.curr.X << " , " << m.curr.Y << " )" << endl;
-    if(visited_paths.count(m) > 0) 
+    if(curr_ == goal) return;
+    else if(v.count(curr_)) return;
+    else if(grid[curr_.first][curr_.second] == 'X')
     {
-        return;
-    }
-    else 
-    {
-        // visited_paths.insert(path);
-        visited_paths.insert(m);
-    }
-    
-    if (grid[m.curr.X][m.curr.Y] == 'X')
-    {
-        cache[m.path] = numeric_limits<int>::max();
+        v.insert(curr_);
         return;
     }
     
-    if(m.curr.X == goal.X && m.curr.Y == goal.Y)
+    v.insert(curr_);
+    update_queue(grid, path_cache, curr_, q, v);
+
+    int n = path_cache[curr_.first][curr_.second] + 1;  
+
+    // horizontal row movement
+    for(int j{curr_.second}; j < grid[0].size(); ++j)
     {
-        // cout << cnt << endl;
-        // visited_paths.insert(m);
-        cache[m.path] = m.cnt;
-        return;
+        if(grid[curr_.first][j] == 'X') break;
+
+        if(path_cache[curr_.first][j] == 0) path_cache[curr_.first][j] = n;
+        else if(path_cache[curr_.first][j] > 0) path_cache[curr_.first][j] = min(path_cache[curr_.first][j], n);
+    }
+    for(int j{curr_.second}; j > -1; --j)
+    {
+        if(grid[curr_.first][j] == 'X') break;
+        
+        if(path_cache[curr_.first][j] == 0) path_cache[curr_.first][j] = n;
+        else if(path_cache[curr_.first][j] > 0) path_cache[curr_.first][j] = min(path_cache[curr_.first][j], n);
     }
 
-    if(m.curr.X < (int)grid[0].size() - 1)
+    // vertical column movement
+    for(int i{curr_.first}; i < grid.size(); ++i)
     {
-        pos right_i;
-        right_i.X = m.curr.X + 1;
-        right_i.Y = m.curr.Y;   
-        m_hist move_right(m.curr, right_i);
-        auto cnt_r = m.cnt;
-        if(m.x_move != move_right.x_move && m.y_move != move_right.y_move || m.x_move == false && m.y_move == false)
-        {
-            ++cnt_r;
-            // cout << "73: " << cnt_r << endl;
-            m.path.insert(make_pair(right_i.X, right_i.Y));
-        }
-        move_right.cnt = cnt_r;
-        move_right.path = m.path;
-        // DFS_move(visited_paths, cache, grid, move_right, goal, cnt_r, path); 
-        to_be_visited.push(move_right);
-        if(m.path.count(make_pair(right_i.X, right_i.Y)) == 1) m.path.erase(make_pair(right_i.X, right_i.Y));  
+        if(grid[i][curr_.second] == 'X') break;
+        
+        if(path_cache[i][curr_.second] == 0) path_cache[i][curr_.second] = n;
+        else if(path_cache[i][curr_.second] > 0) path_cache[i][curr_.second] = min(path_cache[i][curr_.second], n);
+        
     }
-
-    if(m.curr.X > 0)
+    for(int i{curr_.first}; i > -1; --i)
     {
-        pos left_i;
-        left_i.X = m.curr.X - 1;
-        left_i.Y = m.curr.Y;
-        m_hist move_left(m.curr, left_i);
-        auto cnt_l = m.cnt;
-        if(m.x_move != move_left.x_move && m.y_move != move_left.y_move || m.x_move == false && m.y_move == false)
-        {
-            ++cnt_l;
-            m.path.insert(make_pair(left_i.X, left_i.Y));
-        } 
-        move_left.cnt = cnt_l;
-        move_left.path = m.path;
-        // DFS_move(visited_paths, cache, grid, move_left, goal, cnt_l, path);  
-        to_be_visited.push(move_left); 
-        if(m.path.count(make_pair(left_i.X, left_i.Y)) == 1) m.path.erase(make_pair(left_i.X, left_i.Y));  
+        if(grid[i][curr_.second] == 'X') break;
+        
+        if(path_cache[i][curr_.second] == 0) path_cache[i][curr_.second] = n;
+        else if(path_cache[i][curr_.second] > 0) path_cache[i][curr_.second] = min(path_cache[i][curr_.second], n);
     }
+}
 
-    if(m.curr.Y < (int) grid.size() - 1)
+void bfs_handler(vector<string>& grid, vector<vector<int>>& path_cache, int startX, int startY, int goalX, int goalY)
+{
+    queue<cell> q; // queue of cells to visit
+    cell curr_cell = make_pair(startX, startY);
+    cell goal = make_pair(goalX, goalY);
+    set<cell> v{}; // visited cells 
+    q.push(curr_cell);
+    while(!q.empty())
     {
-        pos south_i;
-        south_i.X = m.curr.X;
-        south_i.Y = m.curr.Y + 1;
-        m_hist move_south(m.curr, south_i);
-        auto cnt_s = m.cnt;
-        if(m.x_move != move_south.x_move && m.y_move != move_south.y_move || m.x_move == false && m.y_move == false)
-        {
-            ++cnt_s;
-            m.path.insert(make_pair(south_i.X, south_i.Y));
-        } 
-        move_south.cnt = cnt_s;
-        move_south.path = m.path;
-        // DFS_move(visited_paths, cache, grid, move_south, goal, cnt_s, path); 
-        to_be_visited.push(move_south);  
-        if(m.path.count(make_pair(south_i.X, south_i.Y)) == 1) m.path.erase(make_pair(south_i.X, south_i.Y));  
-    }  
-
-    if(m.curr.Y > 0)
-    {
-        pos north_i;
-        north_i.X = m.curr.X;
-        north_i.Y = m.curr.Y - 1;
-        m_hist move_north(m.curr, north_i);
-        auto cnt_n = m.cnt;
-        if(m.x_move != move_north.x_move && m.y_move != move_north.y_move || m.x_move == false && m.y_move == false)
-        {
-            ++cnt_n;
-            m.path.insert(make_pair(north_i.X, north_i.Y));
-        }
-        move_north.cnt = cnt_n;
-        move_north.path = m.path;
-        // DFS_move(visited_paths, cache, grid, move_north, goal, cnt_n, path); 
-        to_be_visited.push(move_north);
-        if(m.path.count(make_pair(north_i.X, north_i.Y)) == 1) m.path.erase(make_pair(north_i.X, north_i.Y));  
+        cell curr = q.front();
+        q.pop();
+        castle_bfs(grid, path_cache, curr, goal, q, v);
     }
-
-    while(!to_be_visited.empty())
-    {
-        auto path_i = to_be_visited.top();
-        to_be_visited.pop();
-        DFS_move(visited_paths, cache, grid, path_i, goal);
-    }
-
-    return;   
 }
 
 int minimumMoves(vector<string> grid, int startX, int startY, int goalX, int goalY) {
-    pos goal, start;
-    goal.X = goalX;
-    goal.Y = goalY;
-    start.X = startX;
-    start.Y = startY;
-
-    // set<set<pair<int, int>>> visited_paths;
-    set<m> visited_paths; 
-    map<set<pair<int, int>>, int> cache;
-
-    pair<int, int> pos = make_pair(start.X, start.Y);
-    set<pair<int, int>> path{pos};
-    m_hist init_move(start, start);
-    init_move.cnt = 0;
-
-    stack<m_hist> to_be_visited;
-    
-    DFS_move(visited_paths, cache, grid, init_move, goal, to_be_visited);
-    
-    for(auto& [k, v] : cache)
+    vector<vector<int>> path_cache(grid.size());
+    for(auto i{0}; i < grid.size(); ++i)
     {
-        cout << v << endl;
+        for(auto j{0}; j < grid[0].size(); ++j)
+        {
+            if(grid[i][j] == 'X') path_cache[i].push_back(-2);
+            else path_cache[i].push_back(0);
+        }
     }
-    return 0;
+    
+    bfs_handler(grid, path_cache, startX, startY, goalX, goalY);
+
+    return path_cache[goalX][goalY];
 }
 
 int main()
