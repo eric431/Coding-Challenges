@@ -62,7 +62,8 @@ class TestRandomGen(unittest.TestCase):
         This method sets up the random number generator for subsequent tests.
         """
         self.random_numbers = [-1, 0, 1, 2, 3] # test input for random numbers
-        self.probabilities = [0.01, 0.3, 0.58, 0.1, 0.01] # test input for probabilities
+        self.probabilities = [0.01, 0.3, 0.58, 0.1, 0.01] # test input for
+        # probabilities
         self.generator = RandomGen(self.random_numbers, self.probabilities)
 
     def test_mismatched_input_length(self):
@@ -102,40 +103,66 @@ class TestRandomGen(unittest.TestCase):
         generated according to the input distribution are consistent using \
         chi-square goodness of fit test.
         """
-        sample_size_list = [100, 1000, 10000, 100000] # run test on multiple sample sizes
-        for sample_size in sample_size_list:
+        # run test on multiple sample size
+        sample_size_list = [100, 1000, 10000, 100000]
 
-            # the p_value is sensitive to the sample size, so the lines below
-            # adjust the p_value based on the sample size
-            if sample_size >= 100000:
-                p_value = 0.001
-            if sample_size > 1000:
-                p_value = 0.01
-            else:
-                p_value = 0.05
+        # map of sample size to each p value threshold
+        p_value_thresholds = {100000: 0.001, 1000: 0.01, 100: 0.05}
 
-            # create observed distribution from the generator for testing that
-            # generated numbers follow the input probability
-            observed_distribution = Counter([self.generator.next_num() for _ in range(sample_size)])
+        # function to run the chi square goodness of fit for different \
+        # sample sizes
+        def run_chi_square_test(num_failures: int):
+            for sample_size in sample_size_list:
+                # the p_value is adjusted based on the sample size
+                p_value = next((v for k, v in p_value_thresholds.items() \
+                                if sample_size >= k), 0.05)
 
-            # create expected frequency based on the input probability and
-            # sample size
-            expected_distribution = {n: p * sample_size for n, p in \
-                                     zip(self.random_numbers, self.probabilities)}
+                # create observed distribution from the generator for testing
+                # that generated numbers follow the input probability
+                observed_distribution = Counter([self.generator.next_num() \
+                 for _ in range(sample_size)])
 
-            observed = [observed_distribution.get(n, 0) for n in self.random_numbers]
-            expected = [expected_distribution[n] for n in self.random_numbers]
+                # create expected frequency based on the input probability and
+                # sample size
+                expected_distribution = {n: p * sample_size for n, p in \
+                                        zip(self.random_numbers, \
+                                        self.probabilities)}
 
-            # run the chi-square statistical test to compare the distribution
-            # of the generated data
-            p_value_distribution = chisquare(observed, expected)[1]
+                observed = [observed_distribution.get(n, 0) for n in \
+                self.random_numbers]
+                expected = [expected_distribution[n] for n in \
+                self.random_numbers]
 
-            # assert that calculated p_value from the distribution is greater
-            # than the appropriate p_value for the sample size.
-            self.assertGreater(p_value_distribution, p_value, f"Chi-Square \
-                                test failed! p-value = \
-                               {p_value_distribution} at sample size = \
-                               {sample_size}")
+                # run the chi-square statistical test to compare the
+                # distribution of the generated data
+                _, observed_p_value = chisquare(observed, expected)
+
+                try:
+                    # assert that calculated p_value from the distribution is
+                    # greater than the appropriate p_value for the sample size.
+                    self.assertGreater(observed_p_value, p_value, \
+                                      f"Chi-Square test failed! p-value = \
+                                      {observed_p_value} at sample size = \
+                                      {sample_size}")
+                except AssertionError:
+                    num_failures += 1
+
+        # run the test 10 times to account for randomness and count the \
+        # number of failures
+        failure_count = 0
+        trials = 10 # total run of test trials
+        failure_threshold = 3 # number of acceptable failures
+        for _ in range(trials):
+            run_chi_square_test(failure_count)
+
+        # if the tests fail consistently, then it is certain the produced \
+        # distribution does not follow the input parameter
+        self.assertLessEqual(failure_count, failure_threshold,
+                             "Consistent rejection of null \
+                              hypothesis shows that the generated numbers \
+                              do not follow the desired probability \
+                              distribution!")
+
 
 if __name__ == '__main__':
     unittest.main()

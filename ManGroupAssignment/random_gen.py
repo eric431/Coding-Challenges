@@ -14,6 +14,7 @@ Author:
     Eric Jaiyesimi <ericojaiyesimi@gmail.com>
 """
 
+from itertools import accumulate
 import random
 
 class RandomGen:
@@ -52,8 +53,16 @@ class RandomGen:
 
         self._random_nums = random_nums
         self._probabilities = probabilities
+        self._cumulative_probabilities = list(accumulate(self._probabilities))
 
     def next_num(self):
         """Return the next random generated number from the distribution"""
-        return random.choices(self._random_nums, weights=self._probabilities) \
-            [0]
+        p = random.random() # generate random number between 0 and 1
+        p_low = -1
+        for p_low, p_high, num in zip([0] + self._cumulative_probabilities \
+                                       , self._cumulative_probabilities, \
+                                       self._random_nums):
+            if p_low < p <= p_high:
+                return num
+
+        return None
