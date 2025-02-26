@@ -62,6 +62,8 @@ class RandomGen:
         for p_low, p_high, num in zip([0] + self._cumulative_probabilities \
                                        , self._cumulative_probabilities, \
                                        self._random_nums):
+
+
             if p_low < p <= p_high:
                 return num
 
