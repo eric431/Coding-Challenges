@@ -189,13 +189,15 @@ CODING PRACTICES:
 
 * Use of magic numbers / literals is bad practice, because if you need to change the literal you will have to search codebase to find where you have implemented it, it is best to give literals a name that explains what it does or why it is a constant
 
-* When printing high lows, pointer dereferencing is semantically valid, but it can also be achieved by -> which makes it neater.
+* When printing high lows, pointer dereferencing is semantically valid, but it can also be achieved by -> which makes the code neater.
 
 BUGS:
 
 * Lack of exception handling to handle or catch potential run-time bugs.
 
-* getSum returns a reference to the sum, however this will lead to dangling references because the variable will be destroyed when it exits the scope
+* getSum() returns a reference to the sum, however this will lead to dangling references because the variable will be destroyed when it exits the scope
+    - Suggestion if you want references, pass your variable by reference as 
+    a parameter
 
 * The first bug I noticed is the use of the post incrementer in the sscanf function. Your desired behaviour is to increment `i` after reading in the file line into the arrays but in reality what happens is that i is incremented within the parameter, and as such the actual location of memeory you want to write to is ignored leaving garbage data for index 0, and shifting the actual data for each index forward.
     - Instead increment outside of the function after the appropriate lines have been read in.
@@ -209,7 +211,12 @@ BUGS:
 INEFFIECNIES:
 
 * Use of std::map is alright but has O(logn) time complexity for inserting and retrieval
-    - std::unordered_map has amortized access and insertion times, in this code
-    we do not care about order so unordered_map is better here.
+    - std::unordered_map has amortized constant access and insertion times, 
+    in this code we do not care about order so unordered_map is better here.
+
+RECOMMENDATIONS:
+
+* Always document code to make it more readable to your fellow engineers, and
+help you remember what they do in cases where you perform debugging.
 
 */

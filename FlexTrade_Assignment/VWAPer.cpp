@@ -48,12 +48,12 @@
  * - Modern C++ is used
  * - STL coding Standard use, i.e. snake_case naming for functions and
  *   variables
+ * - 64 bit machine
  */
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <limits>
 #include <unordered_map>
 #include <string>
 #include <utility>
@@ -62,6 +62,8 @@
 #define DELIMITER "#"
 #define MAX_SIZE 1000 // Assume 1000 represents the maximum number of ticker data per day.
 
+// std::pair<double, double> is only used to store high low price pairs,
+// so it is given the alias high_low for readability
 typedef std::pair<double, double> high_low;
 
 /**
@@ -83,16 +85,19 @@ public:
     */
     VWAP(const char* file_name) 
     : m_num_trades(0) {
+        // If file is empty throw 0
+        {
+            std::ifstream check(file_name, std::ios::binary | std::ios::ate);
+
+            if(!check.tellg()) throw(0);
+        }
+
         std::ifstream file(file_name);
 
         // If file does not exist then throw error code 1
         if(!file.good())
         {
-            throw(0);
-        }
-        else if(!file.tellg())
-        {
-            throw(0); // change to throw(1)
+            throw(1);
         }
     
         std::string line;
@@ -108,15 +113,15 @@ public:
             
             if (!(iss >> m_stocks[i] >> m_intervals[i] >> m_volumes[i] >> m_highs[i] >> m_lows[i]))
             {
-                throw(1);
-            }
-            else if (m_volumes[i] <= 0)
-            {
                 throw(2);
+            }
+            else if (m_volumes[i] < 0)
+            {
+                throw(3);
             }
             else if (m_highs[i] < 0 || m_lows[i] < 0)
             {
-                throw(3);
+                throw(4);
             }
 
             m_total_volume[m_stocks[i]] += m_volumes[i];
@@ -168,7 +173,7 @@ public:
         {
             if(m_total_volume[m_stocks[i]] == 0)
             {
-                throw(4);
+                throw(5);
             }
 
             std::cout << m_stocks[i] << "," << m_intervals[i] << "," <<
@@ -176,9 +181,9 @@ public:
         }
     }
 
-    /**
-     * @brief Method to print the observed highest and lowest price for the 
-     * stocks over the day.
+   /**
+    * @brief Method to print the observed highest and lowest price for the 
+    * stocks over the day.
     */
     void print_high_low()
     {
@@ -190,11 +195,11 @@ public:
     }
 
    /**
-     * @brief Method to update the observed high and low stock prices for 
-     * each interval
-     *
-     * @param[in] stock, the stock name to update
-     * @return high, the highest observed price for day for the stock
+    * @brief Method to update the observed high and low stock prices for 
+    * each interval
+    *
+    * @param[in] stock, the stock name to update
+    * @return high, the highest observed price for day for the stock
     */
     double get_daily_high(std::string stock)
     {
@@ -202,10 +207,10 @@ public:
     }
 
    /**
-     * Method to update the observed high and low stock prices for each interval
-     *
-     * @param[in] stock, the stock name
-     * @return high, the lowest observed price for day for the stock
+    * Method to update the observed high and low stock prices for each interval
+    *
+    * @param[in] stock, the stock name
+    * @return high, the lowest observed price for day for the stock
     */
     double get_daily_low(std::string stock)
     {
@@ -225,6 +230,31 @@ private:
     std::unordered_map<std::string, high_low> m_high_low {};
 };
 
+void exception_handler(int x)
+{
+    switch (x)
+    {
+    case 0:
+        std::cerr << "Error code (0): File exists, but it is empty" << std::endl;    
+        break;
+    case 1:
+        std::cerr << "Error code (1): File does not exist, or cannot be found in this path." << std::endl; 
+        break;
+    case 2:
+        std::cerr << "Error code (2): Corrupted data! Unable to parse due to incorrect data type" << std::endl;  
+        break;
+    case 3:
+        std::cerr << "Error code (3): Corrupted data! Volume cannot be negative nor can it be zero." << std::endl;
+        break;
+    case 4:
+        std::cerr << "Error code (4): Corrupted data! stock price is negative." << std::endl;   
+        break;
+    case 5:
+        std::cerr << "Error code (5): Division by zero! File may contain corrupted or missing volume data." << std::endl; 
+        break;
+    }
+};
+
 int main(int argc, char* argv[])
 {
     try
@@ -233,32 +263,17 @@ int main(int argc, char* argv[])
         // running 
         std::unique_ptr<VWAP> vwap(new VWAP(argv[1]));
 
-        vwap->print_interval_volume_weights();
-        std::cout << DELIMITER << std::endl;
-        vwap->print_high_low();
+        // Ensure vwap is not a nullptr
+        if(vwap)
+        {
+            if(vwap) vwap->print_interval_volume_weights();
+            std::cout << DELIMITER << std::endl;
+            if(vwap) vwap->print_high_low();
+        }
     }
     catch(int x)
     {
-        if(x == 0)
-        {
-            std::cerr << "Error code (0): File does not exist, or cannot be found in this path" << std::endl;  
-        }
-        if(x == 1)
-        {
-            std::cerr << "Error code (1): Corrupted data! Unable to parse due to incorrect data type" << std::endl;  
-        }
-        else if(x == 2)
-        {
-            std::cerr << "Error code (2): Corrupted data! Volume cannot be negative nor can it be zero." << std::endl;
-        }
-        else if(x == 3)
-        {
-            std::cerr << "Error code (3): Corrupted data! stock price is negative." << std::endl;                
-        }
-        else if(x == 4)
-        {
-            std::cerr << "Error code (4): Division by zero! File may contain corrupted or missiing volume data." << std::endl; 
-        }
+        exception_handler(x);
     }
 
     return 0;
