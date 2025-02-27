@@ -16,37 +16,24 @@ vector<string> split(const string &);
  */
 
 int cookies(int k, vector<int> A) {
-    if(A.size() < 2 || (A[0] == 0 && A[1] == 0)) return -1;
+    if (!A.size()) return -1;
+    priority_queue<int, vector<int>, greater<int>> heap(A.begin(), A.end(), greater<int>());
     
-    sort(A.begin(), A.end());
-    int iter_cnt {0};
-    while(true)
-    {
-        if(A[0] >= k && A[1] >= k)
-            break;
-        else
-         {
-            int new_cookie = A[0] + 2 * A[1];
-            int i {1};
-            for(; i < A.size(); i += 2)
-            {
-                if(i == 1 || (i > 2 && A[i] == A[i - 2] && A[i - 1] == A[i - 3]))
-                {
-                    A.push_back(new_cookie);
-                    ++iter_cnt;
-                    continue;
-                }
-                else if(i > 2 && (A[i] != A[i - 2] || A[i - 1] != A[i - 3]))
-                    break;
-            }
-            
-            A.erase(A.begin(), A.begin() + i - 1);
-            if(A.size() <= 1) return -1;
-
-            sort(A.begin(), A.end());
-         }
+    int cnt {0};
+    int new_cookie {};
+    while (heap.top() < k && heap.size() >= 2) {
+        new_cookie = 0;
+        for(auto i {1}; i <= 2; ++i)
+        {
+            new_cookie += i * heap.top();
+            heap.pop();             
+        }
+        
+        heap.push(new_cookie);
+        ++cnt;
     }
-    return iter_cnt;
+    
+    return (heap.top() >= k) ? cnt : -1;
 }
 
 int main()

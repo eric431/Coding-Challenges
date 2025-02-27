@@ -1,11 +1,10 @@
-#include <cstdio>
+#include <cstdio> 
 #include <cstring>
 #include <map>
 #include <iostream>
 #include <string>
 
 
-// File desctiption should be added to before includes and use /* instead of /**
 /**
 VWAPer v0.1
 
@@ -42,88 +41,73 @@ BT.LN,449.8,448.2
 
 #define DELIMITER "#"
 
-using namespace std; // it is bad practice to call in global namespace due to the risk of accessing functions with the same name in the std namespace
+using namespace std;
 
-typedef basic_string<char> string; // string already exists without the typedef/ unnecessary spacing 
+typedef basic_string<char> string; 
 
-// Inconsistent use of spacingscope brackets
-
-// class name is ambiguous and does not make it easily clear its function
-class	CUpperLower // unnecessary spacing 
+class	CUpperLower
 {
 public:
-    CUpperLower() : nCurLwr(0), nCurUpr(0) {}; // intiailising nCurLwr to 0 will never update nCurLwr unless 
+    CUpperLower() : nCurLwr(0), nCurUpr(0) {};
 
-    // implicit argument conversion of High and Low, leading to loss of data
-    // poor naming convention, what is being added?
-    void	add(int nHigh, int nLow) // inconsistent and unnecessary spacing
+
+    void	add(int nHigh, int nLow)
     {
-        if (nHigh > nCurUpr) // Inconsistent use of scope brackets
+        if (nHigh > nCurUpr)
             nCurUpr = nHigh;
 
-        if (nLow < nCurLwr) // Inconsistent use of scope brackets
+        if (nLow < nCurLwr) 
             nCurLwr = nLow;
     }
 
-    // wrong type returned
-    int& getSum() // returning sum by reference can lead to destruction of element before its use leading to a dangling reference
+    int& getSum() 
     {
         int sum = nCurLwr + nCurUpr;
         return sum;
     }
 
-    int         nCurLwr; // improper and unnecessary spacing
-    int         nCurUpr; // improper and unnecessary spacing
+    int         nCurLwr; 
+    int         nCurUpr; 
 };
 
 int main(int argc, char* argv[])
 {
-    // If statement is not necessary within the confines of the problem description described above
-    // Also logically, what would be the reason for checking the version number if all we always want to use the most up-to-date VWAPer
     if (!strcmp("version", argv[1]))
     {
-        cerr << "VWAPer version 0.1" << endl; // error log line is ambiguous and not descriptive
-        return 0; // return 0 means the function executed successfully, which is not what is intended, instead return 1
+        cerr << "VWAPer version 0.1" << endl; 
+        return 0; 
     }
 
     FILE*	file = fopen(argv[2], "r");
 
-    cerr << "Reading file" << argv[2] << endl; // log lines need to be removed in production code
-    // lack of spacing between file and argv[2] can make reading the output unclear
+    cerr << "Reading file" << argv[2] << endl; 
 
-    // Use of magic numbers is not good practice, as if there is a change in code requirements then new developers will have to manually update every occurrence of the magic number, it is also not self explanatory why 1000 has been chosen.
     char	line[256];
-    char	Stocks[1000][10]; // use of an array without dynamic updates leads to errors when a file size containing more than 1000 stocks is given, use vector instead
-    int         Intervals[1000]; // Inconsistent and unnecessary use of space
-    int         Volumes[1000]; // Inconsistent and unnecessary use of space
+    char	Stocks[1000][10]; 
+    int         Intervals[1000]; 
+    int         Volumes[1000];
     float	Highs[1000];
     float	Lows[1000];
 
     int         i = 0;
-    int         sum = 0; // No need for sum as it is not used for any calculations
+    int         sum = 0; 
 
     while (fgets(line, 256, file))
     {
         sscanf(line, "%s %d %d %f %f",
                Stocks[i], &Intervals[i],
-               &Volumes[i], &Highs[i], &Lows[i++]); // incrementing i as a parameter increments location that sscanf writes to
+               &Volumes[i], &Highs[i], &Lows[i++]); 
     }
 
-    cerr << "Calculating total volumes" << endl; // log lines need to be removed in production code
+    cerr << "Calculating total volumes" << endl; 
 
-    // Use unordered_map when the use case is retrieving the values associated with a key as it is more efficient with a O(1) access time complexity
-    map<std::string, int>		TotalVolumes; // Inconsistent and unnecessary use of space
+    map<std::string, int>		TotalVolumes; 
 
     for (int s = 0; s <= i; ++s)
     {
-        // naming convention is inefficient 
-        // Use snake case naming is preferred
-        std::string	stockname = Stocks[s]; // use of std namespace when it has already been given access on line 43
-        // either use the namespaces specifier or don't but ensure consistency
+        std::string	stockname = Stocks[s]; 
 
-        // This code block is unnecessary and leads to multiple summation,
-        // the desired result can be achieved by adding Volumes[s] to the corresponding key entry for TotalVolumes
-        for (int j =0; j <= i; ++j) // inconsistent spacing between = and 0
+        for (int j =0; j <= i; ++j)
         {
             if (!strcmp(Stocks[j], stockname.c_str()))
             {
@@ -132,7 +116,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    cerr << "Calculating high lows" << endl; // log lines need to be removed
+    cerr << "Calculating high lows" << endl;
 
     map<std::string, CUpperLower>	HighLows;
 
@@ -142,7 +126,7 @@ int main(int argc, char* argv[])
         cout << HighLows[Stocks[s]].getSum(); 
     }
 
-    cerr << "Writing files" << endl; // Log lines need to be renmoved in production code 
+    cerr << "Writing files" << endl; 
 
     for (int s = 0; s <= i; ++s)
     {
@@ -156,10 +140,74 @@ int main(int argc, char* argv[])
     while (itr != HighLows.end())
     {
         cout << (*itr).first << "," << (*itr).second.nCurLwr << "," <<
-                (*itr).second.nCurUpr << endl; // Highs should be printed first, followed by lows
+                (*itr).second.nCurUpr << endl; 
 
         ++itr;
     }
 
-    return 1; // function should return 0 at the end if executed successfully
+    return 1;
 }
+
+
+/*
+COMMENTS:
+Directed towards intern.
+
+I have left comments below highlighting areas of issue into three areas (coding practices, bugs and inefficiency), to enable you understand areas of improvement and how to improve.
+
+CODING PRACTICES:
+-----------------
+
+* #include <cstdlib> and #include <cstring> are not necessary
+
+* File description should be added before the libraries not after
+
+* using namespace std in the global scope is controversial due to potential conflicts or ambiguity between function names, it is better to use the namespace in a local scope as opposed to global
+
+* typedef of basic_string<char> on line 47 is not necessary, as the string library takes care of that for us
+
+* Use of tabs for spacing is not good practice, in addition to the inconsistent spacing in different parts of the code
+
+* Class name CUpperLower is bad naming, as it is not self evident what this does, a better name could have been `DailyHighLows` or StockHighLows`
+
+* poor naming convention, as it is both inconsistent and snake_case naming should be used for functions and variables (assuming STL standards)
+
+* Inconsistent use of scope braces, although this is not a semantic error, consistent coding standards should be followed.
+
+* getSum() is a redundant method, you might have to explain to me your reasoning behind implementing this when it is not required as part of the file description.
+
+* I am unsure why a check of the version if performed, there might be a valid reason, but sometimes it is best to leave comments in code for other engineers to easily follow the intentions and thought process behind your methods.
+    - Following on, I would presume we would always want to use the most up-to-date version of VWAP, so why would a version check be necessary?
+
+* Within the main function, several while loops are implemented for statements that can be moved to a single loop where the contents of the line are being read from the file.
+
+* I noticed alot of cerr lines in your code, which I presume is due to you running tests of your code / breakpoints when running tests, however you should remove them before pushing to the repository for production ready code.
+
+* Your class only contains public functions and only has one method, as such a struct could have been used instead.
+
+* Use of magic numbers / literals is bad practice, because if you need to change the literal you will have to search codebase to find where you have implemented it, it is best to give literals a name that explains what it does or why it is a constant
+
+* When printing high lows, pointer dereferencing is semantically valid, but it can also be achieved by -> which makes it neater.
+
+BUGS:
+
+* Lack of exception handling to handle or catch potential run-time bugs.
+
+* getSum returns a reference to the sum, however this will lead to dangling references because the variable will be destroyed when it exits the scope
+
+* The first bug I noticed is the use of the post incrementer in the sscanf function. Your desired behaviour is to increment `i` after reading in the file line into the arrays but in reality what happens is that i is incremented within the parameter, and as such the actual location of memeory you want to write to is ignored leaving garbage data for index 0, and shifting the actual data for each index forward.
+    - Instead increment outside of the function after the appropriate lines have been read in.
+
+* Use of sscanf can be problematic down the line as it does not throw an exception if there is an issue parsing the file. Instead it returns an error code which can make it difficult to deduce whether this from the actual data or from a parsing mismatch.
+
+* When printing daily highs and lows, the order in which it is printed is not consistent with the problem description format, high prices should be returned first followed by low prices
+
+* main returns 1 instead of 0, which signals that the code did not execute correctly, instead use 0 for successful execution and 1 for unsuccesful execution
+
+INEFFIECNIES:
+
+* Use of std::map is alright but has O(logn) time complexity for inserting and retrieval
+    - std::unordered_map has amortized access and insertion times, in this code
+    we do not care about order so unordered_map is better here.
+
+*/
