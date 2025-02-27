@@ -84,6 +84,16 @@ public:
     VWAP(const char* file_name) 
     : m_num_trades(0) {
         std::ifstream file(file_name);
+
+        // If file does not exist then throw error code 1
+        if(!file.good())
+        {
+            throw(0);
+        }
+        else if(!file.tellg())
+        {
+            throw(0); // change to throw(1)
+        }
     
         std::string line;
 
@@ -229,6 +239,10 @@ int main(int argc, char* argv[])
     }
     catch(int x)
     {
+        if(x == 0)
+        {
+            std::cerr << "Error code (0): File does not exist, or cannot be found in this path" << std::endl;  
+        }
         if(x == 1)
         {
             std::cerr << "Error code (1): Corrupted data! Unable to parse due to incorrect data type" << std::endl;  
@@ -237,11 +251,11 @@ int main(int argc, char* argv[])
         {
             std::cerr << "Error code (2): Corrupted data! Volume cannot be negative nor can it be zero." << std::endl;
         }
-        else if(x == 2)
+        else if(x == 3)
         {
             std::cerr << "Error code (3): Corrupted data! stock price is negative." << std::endl;                
         }
-        else if(x == 5)
+        else if(x == 4)
         {
             std::cerr << "Error code (4): Division by zero! File may contain corrupted or missiing volume data." << std::endl; 
         }

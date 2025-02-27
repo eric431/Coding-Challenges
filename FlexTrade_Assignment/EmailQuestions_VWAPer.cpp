@@ -174,6 +174,8 @@ CODING PRACTICES:
 
 * Inconsistent use of scope braces, although this is not a semantic error, consistent coding standards should be followed.
 
+* rather than implementing nCurLwr or nCurUpr as public variables, make them private and modify or view them using getter and setter methods.
+
 * getSum() is a redundant method, you might have to explain to me your reasoning behind implementing this when it is not required as part of the file description.
 
 * I am unsure why a check of the version if performed, there might be a valid reason, but sometimes it is best to leave comments in code for other engineers to easily follow the intentions and thought process behind your methods.
