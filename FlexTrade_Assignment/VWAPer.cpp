@@ -89,6 +89,12 @@ public:
         {
             std::ifstream check(file_name, std::ios::binary | std::ios::ate);
 
+            // If file does not exist then throw error code 1
+            if(!check.good())
+            {
+                throw(1);
+            }
+
             if(!check.tellg()) throw(0);
         }
 
@@ -98,8 +104,8 @@ public:
         if(!file.good())
         {
             throw(1);
-        }
-    
+        }    
+
         std::string line;
 
         int i {0};
@@ -214,17 +220,17 @@ public:
     */
     double get_daily_low(std::string stock)
     {
-        return m_high_low[stock].first;
+        return m_high_low[stock].second;
     }
 
 private:
-    char	m_stocks[MAX_SIZE][10];
-    int     m_intervals[MAX_SIZE];
-    int     m_volumes[MAX_SIZE];
-    double	m_highs[MAX_SIZE];
-    double	m_lows[MAX_SIZE];
+    std::vector<std::string> m_stocks;
+    std::vector<int> m_intervals;
+    std::vector<int> m_volumes;
+    std::vector<double>	m_highs;
+    std::vector<double>	m_lows;
 
-    int     m_num_trades {};
+    int m_num_trades {};
 
     std::unordered_map<std::string, int> m_total_volume {};
     std::unordered_map<std::string, high_low> m_high_low {};
@@ -261,14 +267,14 @@ int main(int argc, char* argv[])
     {
         // unique_ptr used to ensure only one instance of this class is 
         // running 
-        std::unique_ptr<VWAP> vwap(new VWAP(argv[1]));
+        auto vwap = std::make_unique<VWAP>(argv[1]);
 
         // Ensure vwap is not a nullptr
         if(vwap)
         {
-            if(vwap) vwap->print_interval_volume_weights();
+            vwap->print_interval_volume_weights();
             std::cout << DELIMITER << std::endl;
-            if(vwap) vwap->print_high_low();
+            vwap->print_high_low();
         }
     }
     catch(int x)

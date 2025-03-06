@@ -86,3 +86,44 @@ public:
         return isBST(root, min_max);
     }
 };
+
+// Alternatively
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+    public:
+        void traverse_tree(TreeNode* root, long& prev_val, bool& is_valid)
+        {
+            if(!root || !is_valid)
+            {
+                is_valid &= true;
+                return;
+            }
+    
+            traverse_tree(root->left, prev_val, is_valid);
+    
+            is_valid &= (root->val > prev_val);
+    
+            prev_val = root->val;
+    
+            traverse_tree(root->right, prev_val, is_valid);
+        }
+    
+        bool isValidBST(TreeNode* root) {
+            long prev_val = numeric_limits<long>::min();
+            bool is_valid = true;
+            
+            traverse_tree(root, prev_val, is_valid);
+    
+            return is_valid;
+        }
+    };
