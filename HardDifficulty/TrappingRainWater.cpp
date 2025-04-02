@@ -27,46 +27,23 @@ n == height.length
 class Solution {
 public:
     int trap(vector<int>& height) {
-        if(height.size() <= 2) return 0;
+        int max_trap = 0;
 
-        deque<pair<int, int>> local_maxima;
-        vector<int> maxima;
-        int max_n = 0, num_trap = 0;
+        int n = height.size();
+        vector<int> left(n, -1);
+        vector<int> right(n, -1);
 
-        for(auto i = 0; i < height.size(); ++i)
-        {
-            if(i == 0)
-            {
-                local_maxima.push_back(move(make_pair(height[i], i)));
-            }
-            else if((height[i] > height[i - 1]))
-            {
-                // While loop is important so remember
-                while(height[i] > local_maxima.back().first)
-                {
-                    if(local_maxima.back().first == max_n || local_maxima.empty()) break;
-                    local_maxima.pop_back();
-                }
-                local_maxima.push_back(move(make_pair(height[i], i)));
-            }
-            max_n = max(max_n, height[i]);
+        left[0] = height[0];
+        right[n - 1] = height[n - 1];
+        for (auto h {1}; h < n; ++h){
+            left[h] = max(height[h], left[h - 1]);
+            right[n - h - 1] = max(height[n - h - 1], right[n - h]);
         }
 
-        maxima.resize(local_maxima.size());
-        for(int i = local_maxima.size() - 1; i >= 0; --i)
-        {
-            maxima[i] = move(local_maxima[i].second);
+        for (int i{0}; i < n; ++i){
+            max_trap += min(left[i], right[i]) - height[i];
         }
 
-        for(int i = 0, j = 1; j < maxima.size(); ++i, ++j)
-        {
-            int local_two = height[maxima[j]], local_one = height[maxima[i]];
-            int local_max = min(local_one, local_two);
-            for(int k = maxima[i]; k < maxima[j]; ++k)
-            {
-                num_trap += max(local_max - height[k], 0);
-            }
-        }
-        return num_trap;
+        return max_trap;
     }
 };
