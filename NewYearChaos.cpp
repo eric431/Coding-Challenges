@@ -89,19 +89,16 @@ void swap(vector<int>& q, int i, int j)
  * The function accepts INTEGER_ARRAY q as parameter.
  */
 
-void minimumBribes(vector<int> q) {
-    map<int, int> numBribes;
+ void minimumBribes(vector<int> q) {
+    unordered_map<int, int> numBribes;
     int BribeCnt = 0;
     
-    for(int i = 1; i < q.size(); i++)
-    {
-        if(q[i] < q[i - 1])
-        {
-            swap(q, i, i - 1);
+    for(int i = 1; i < q.size(); i++) {
+        if(q[i] < q[i - 1]) {
+            swap(q[i], q[i - 1]);
             numBribes[q[i]]++;
             BribeCnt++;
-            if(numBribes[q[i]] > 2)
-            {
+            if(numBribes[q[i]] > 2) {
                 cout << "Too chaotic" << endl;
                 return;
             }

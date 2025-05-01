@@ -1,10 +1,4 @@
-#include <fstream>
-#include <iostream>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-#include <string>
-#include <functional>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -20,115 +14,57 @@ string rtrim(const string &);
  *  2. STRING b
  */
 
-static string a_ = "";
-static string b_ = "";
-
-static int len_a;
-static int len_b;
-
-unordered_set<string> cache{};
-
-bool dp_solver(int i, int j, string a, vector<vector<bool>>& memo)
-{
-    if(i == len_a && j == len_b) return true; // (a == b_);
-    else if((i >= len_a && j < len_b) || (isupper(a_[i]) && j == len_b)) return false;
-
-    // cout << 36 << endl;
+bool is_abbrev(int i, int j, string &a, string &b, vector<vector<int>>& memo)
+{        
+    if (i == a.size() && j == b.size()) return true;
+    else if (i == a.size()) return false;
     
-    bool ans = false;
-    if(a_[i] == b_[j] && a.size() == j){
-        // a += a_[i];
-        auto new_a = a + a_[i];
-        ans |= dp_solver(i + 1, j + 1, new_a, memo);
-        // a.pop_back();
-        
-        return ans;
-    }
-    else if (a.size() != j) return false;
-
-    // cout << 49 << endl;
-
-    if(islower(a_[i])){
-        auto suffix = b_.substr(0, j + 1);
-
-        ans |= dp_solver(i + 1, j, a, memo);
-        if(ans) return ans;
-
-        auto key = (a + a_[i]) + '#' + suffix;
-        cache.insert(key);
-
-        cout << key << " " << a_[i + 1] << endl;
-        
-        auto upper = toupper(a_[i]);
-        auto new_a = a;
-        new_a += upper;
-
-        key = new_a + '#' + suffix;
-        // cout << key << endl;
-        if (upper == b_[j] && !cache.count(key))
-        {
-            ans |= dp_solver(i + 1, j + 1, new_a, memo);
-
-            if(ans) return ans;
-
-            // a.pop_back();
-
-            // cout << key << endl;
-
-            cache.insert(key);
+    int l = a.size();
+    if(memo[l][i] != -1) return memo[l][i];
+    
+    if(isupper(a[i])) {
+        if (j == b.size() || a[i] != b[j]) {
+            return memo[l][i] = false;
+        } else {
+            return memo[l][i] = is_abbrev(i + 1, j + 1, a, b, memo); 
         }
+    } else {
+        string a_cpy = a;
+        a_cpy.erase(i, 1);
+        
+        a[i] = toupper(a[i]);
 
-        return ans;
+        return memo[l][i] = is_abbrev(i, j, a, b, memo) || is_abbrev(i, j, a_cpy, b, memo);
     }
-    else return false;
 }
 
 string abbreviation(string a, string b) {
-    a_ = a;
-    b_ = b;
-    len_a = a.size();
-    len_b = b.size();
-
-    vector<vector<bool>> memo(a.size(), vector<bool>(26, true));
-
-    string str = "";
-    return dp_solver(0, 0, str, memo) ? "YES" : "NO";
+    vector<vector<int>> memo(a.size() + 1, vector<int>(a.size(), -1));
+    return is_abbrev(0, 0, a, b, memo) ? "YES" : "NO";
 }
 
 int main()
 {
-    ifstream file("abbreviation_input.txt");
-    if (!file) {
-        std::cerr << "Error opening file!" << std::endl;
-        return 1;
-    }
+    ofstream fout(getenv("OUTPUT_PATH"));
 
-    int q;
-    vector<string> a_vec{};
-    vector<string> b_vec{};
+    string q_temp;
+    getline(cin, q_temp);
 
-    int i{0};
-    string line;
-    if(file.is_open()){
-        while( getline(file, line) ){
-            if(i == 0) q = stoi(line);
-            else if(i % 2) a_vec.push_back(line);
-            else b_vec.push_back(line);
-
-            ++i;
-        }
-    }
+    int q = stoi(ltrim(rtrim(q_temp)));
 
     for (int q_itr = 0; q_itr < q; q_itr++) {
-        auto a = a_vec[q_itr];
-        auto b = b_vec[q_itr];
+        string a;
+        getline(cin, a);
+
+        string b;
+        getline(cin, b);
 
         string result = abbreviation(a, b);
 
-        cout << result << "\n";
+        fout << result << "\n";
     }
 
-    file.close();
+    fout.close();
 
     return 0;
 }
@@ -138,7 +74,7 @@ string ltrim(const string &str) {
 
     s.erase(
         s.begin(),
-        std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); })
+        find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace)))
     );
 
     return s;
@@ -148,7 +84,7 @@ string rtrim(const string &str) {
     string s(str);
 
     s.erase(
-        std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(),
+        find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(),
         s.end()
     );
 

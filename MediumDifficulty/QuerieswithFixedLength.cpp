@@ -1,3 +1,59 @@
+/*
+Consider an -integer sequence, . We perform a query on  by using an integer, , to calculate the result of the following expression:
+
+In other words, if we let , then you need to calculate .
+
+Given  and  queries, return a list of answers to each query.
+
+Example
+
+
+The first query uses all of the subarrays of length : . The maxima of the subarrays are . The minimum of these is .
+
+The second query uses all of the subarrays of length : . The maxima of the subarrays are . The minimum of these is .
+
+Return .
+
+Function Description
+
+Complete the solve function below.
+
+solve has the following parameter(s):
+
+int arr[n]: an array of integers
+int queries[q]: the lengths of subarrays to query
+Returns
+
+int[q]: the answers to each query
+Input Format
+
+The first line consists of two space-separated integers,  and .
+The second line consists of  space-separated integers, the elements of .
+Each of the  subsequent lines contains a single integer denoting the value of  for that query.
+
+Constraints
+
+Sample Input
+
+5 5
+1 2 3 4 5
+1
+2
+3
+4
+5
+Sample Output
+
+1
+2
+3
+4
+5
+Explanation
+
+Each prefix has the least maximum value among the consecutive subsequences of the same size.
+*/
+
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -16,93 +72,27 @@ vector<string> split(const string &);
  */
 
 vector<int> solve(vector<int> arr, vector<int> queries) {
-    auto next_largest_element = [&](const vector<int>& arr)
-    {
-        stack<pair<int, int>> nle_stack{};
-        
-        // intialise the next largest element with a sentinel value of -1
-        const int sentinel_val{-1};
-        vector<int> next_largest_element(arr.size(), sentinel_val);
-        for(auto i{0}; i < arr.size(); ++i)
-        {
-            // while the stack is not empty and the element is greater than the top element of the stack
-            while(!nle_stack.empty() && arr[i] > nle_stack.top().first)
-            {
-                // store the top of the stack in a variable called tmp
-                auto tmp = nle_stack.top();
-                nle_stack.pop();
-                
-                // get the index of the top of the stack and update the next smallest element vector with the window size of the current smallest element
-                next_largest_element[tmp.second] = i - tmp.second;
+    vector<int> min_max;
+    min_max.reserve(queries.size());
+    
+    for(auto &q : queries){
+        auto max_itr = max_element(arr.begin(), arr.begin() + q);
+        int max_q = *max_itr;
+        int min_q = *max_itr;
+        for(auto i{1}; i < arr.size() - q + 1; ++i){
+            if (arr[i - 1] == max_q){
+                max_itr = max_element(arr.begin() + i, arr.begin() + i + q);
+                max_q = *max_itr;
+            } else {
+                max_q = max(arr[i + q], max_q);
             }
-            nle_stack.push(make_pair(arr[i], i));
-        }
-        
-        while(!nle_stack.empty())
-        {
-            auto tmp = nle_stack.top();
-            nle_stack.pop();
             
-            next_largest_element[tmp.second] = arr.size() - tmp.second;
+            min_q = min(min_q, max_q);
         }
-        return next_largest_element;
-    };
-    
-    auto previous_largest_element = [&](const vector<int>& arr)
-    {
-        stack<pair<int, int>> ple_stack{};
-        
-        // initialise the previous smallest element with a sentinel value of -1
-        int sentinel_val{-1};
-        vector<int> prev_largest_element(arr.size(), sentinel_val);
-        
-        for(int i = arr.size() - 1; i > -1; --i)
-        {
-            // while the stack is not empty and the element is greater than the top element of the stack
-            while(!ple_stack.empty() && arr[i] > ple_stack.top().first)
-            {
-                // store the top of the stack in a variable called tmp
-                auto tmp = ple_stack.top();
-                ple_stack.pop();
-                
-                // get the index of the top of the stack and update the previous smallest element vector with the window size of the current smallest element
-                prev_largest_element[tmp.second] = tmp.second - i - 1;
-            }
-            ple_stack.push(make_pair(arr[i], i));
-        }
-        
-        while(!ple_stack.empty())
-        {
-            auto tmp = ple_stack.top();
-            ple_stack.pop();
-            
-            prev_largest_element[tmp.second] = tmp.second;
-        }
-        return prev_largest_element;
-    }; 
-    
-    auto nle = next_largest_element(arr);
-    auto ple = previous_largest_element(arr);
-    
-    // create arr of window sizes
-   vector<int> k(arr.size());
-   for(auto i{0}; i < k.size(); ++i) k[i] = nle[i] + ple[i];
-   
-   vector<int> min_max(k.size(), -1);
-   for(auto i{0}; i < min_max.size(); ++i)
-        min_max[k[i] - 1] = max(min_max[k[i] - 1], arr[i]);
-        
-    for(int i = min_max.size() - 1; i > -1; --i)
-    {
-        if(min_max[i] == -1) min_max[i] = min_max[i + 1];
-        else if(i < min_max.size() - 1) min_max[i] = min(min_max[i], min_max[i + 1]);
+        min_max.push_back(min_q);
     }
     
-    vector<int> result {};
-    for(auto q : queries)
-        result.push_back(min_max[q - 1]);
-
-    return result;
+    return min_max;
 }
 
 

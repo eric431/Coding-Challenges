@@ -1,0 +1,19 @@
+//
+
+vector<bool> visited;
+
+void learn_skill(int skill, vector<int> T) {
+    if (visited[skill]) return;
+
+    skill_set.insert(skill);
+    visited[skill] = true;
+
+    if (skill == root) return;
+    else learn_skill(T[skill], T)
+}
+
+for(auto skill : A) {
+    learn_skill(skill, T);
+
+    return skill_set.size();
+}

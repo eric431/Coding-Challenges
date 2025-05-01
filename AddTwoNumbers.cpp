@@ -38,94 +38,28 @@
  * };
  */
 class Solution {
-public:
-    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
-        ListNode* sum = new ListNode;
-        ListNode* s = sum; 
-        int carry = 0;
-        
-        while(l1 != nullptr || l2 != nullptr)
-        {
-            if(l1 != nullptr && l2 != nullptr)
-            {
-                if(l1->val + l2->val + carry < 10)
-                {
-                    sum->val = l1->val + l2->val + carry;
-                    carry = 0;
-                }
-                else if(l1->val + l2->val + carry >= 10)
-                {
-                    sum->val = (l1->val + l2->val + carry) - 10;
-                    carry = 1;
-                }
-            }
-            else if (l1 != nullptr && l2 == nullptr)
-            {
-                auto overflow_check = l1->val + carry;
-                if(overflow_check < 10)
-                {
-                    sum->val  = overflow_check;
-                    carry = 0;
-                }
-                else if (overflow_check > 10)
-                {
-                    sum->val  = overflow_check - 10;
-                    carry = 1;
-                }
-            }
-            else if (l1 == nullptr && l2 != nullptr)
-            {
-                auto overflow_check = l2->val + carry;
-                if(overflow_check < 10)
-                {
-                    sum->val  = overflow_check;
-                    carry = 0;
-                }
-                else if (overflow_check > 10)
-                {
-                    sum->val  = overflow_check - 10;
-                    carry = 1;
-                }
-            }
+    public:
+        ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+            ListNode* sum = new ListNode;
+            ListNode* s = sum; 
+            int c = 0;
             
-            if(l1 != nullptr && l2 != nullptr)
-            {
-              if(l1->next != nullptr || l2->next != nullptr)
-                {
-                    sum->next = new ListNode;
-                    sum = sum->next;                
-                }                
+            while(l1 || l2){
+                int x = l1 ? l1->val : 0;
+                int y = l2 ? l2->val : 0;
+    
+                int tmp = x + y + c;
+    
+                sum->val = (tmp) % 10;
+                c = tmp / 10;
+    
+                l1 = l1 ? l1->next : l1;
+                l2 = l2 ? l2->next : l2;
+    
+                sum->next = ((l1 || l2) || (c > 0)) ? new ListNode(c) : nullptr;
+                sum = sum->next;
             }
-            else if(l1 != nullptr && l2 == nullptr && l1->next != nullptr)
-            {
-                sum->next = new ListNode;
-                sum = sum->next;                
-            }
-            else if(l1 == nullptr && l2 != nullptr && l2->next != nullptr)
-            {
-                sum->next = new ListNode;
-                sum = sum->next;                
-            }
-            
-            if(l1 != nullptr)
-            {
-                l1 = l1->next;
-            }
-            if(l2 != nullptr)
-            {
-                l2 = l2->next;
-            }
+    
+            return s;
         }
-        
-        if(carry == 1)
-        {
-            sum->next = new ListNode(1);
-        }
-        else
-        {
-            sum = nullptr;
-        }
-        
-        return s;
-    }
-};
+    };

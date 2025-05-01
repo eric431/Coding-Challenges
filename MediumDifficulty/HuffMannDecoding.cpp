@@ -166,64 +166,23 @@ typedef struct node
 
 */
 
-void node_traversal(node* root, const string& s, string& decoded_s)
-{
-    node* itr = new node;
-    for(auto i = 0; i < s.size(); ++i)
-    {
-        itr = root;
-        if(s[i] == '0')
-        {
-            if(itr != nullptr) itr = itr->left;
-            if(itr != nullptr && itr->data != '\0')
-            {
-                decoded_s += itr->data;
-            }
-            else if(itr != nullptr && itr->data == '\0')
-            {
-                while(itr != nullptr && itr->data == '\0')
-                {
-                    ++i;
-                    if(i == s.size()) break;
-                    
-                    if(s[i] == '0')
-                        itr = itr->left;
-                    else if (s[i] == '1')
-                        itr = itr->right;
-                }
-                if(itr != nullptr) decoded_s += itr->data;
-            }
+void decode_huff(node * root, string s) {
+    string decoded_str = "";
+    node* itr = root;
+    for(auto i{0}; i < s.size(); ++i) {
+        if (s[i] == '1') {
+            itr = itr->right;
+        } else if (s[i] == '0') {
+            itr = itr->left;
         }
-        else if(s[i] == '1')
-        {
-            if(itr != nullptr) itr = itr->right;
-            if(itr != nullptr && itr->data != '\0')
-            {
-                decoded_s += itr->data;   
-            }
-            else if(itr != nullptr && itr->data == '\0')
-            {
-                while(itr != nullptr && itr->data == '\0')
-                {
-                    ++i;
-                    if(i == s.size()) break;
-                    
-                    if(s[i] == '0')
-                        itr = itr->left;
-                    else if (s[i] == '1')
-                        itr = itr->right;
-                }
-                if(itr != nullptr) decoded_s += itr->data;
-            }            
+        
+        if (itr->data) {
+            decoded_str += itr->data;
+            itr = root;
         }
     }
-}
-
-void decode_huff(node * root, string s) { 
-    string dc_s = "";
-    node_traversal(root, s, dc_s);
-
-    cout << dc_s << endl;
+    
+    cout << decoded_str << endl;
 }
 
 int main() {

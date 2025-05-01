@@ -1,93 +1,53 @@
 class Solution {
     public:
-        vector<int> houses_;
-        // vector<int> memo;
-        
-        // vector<vector<int>> memo;
-        // vector<vector<int>> cost_;
-        vector<vector<pair<int, int>>> cost_;
+        vector<int> houses;
+        vector<vector<int>> cost;
+        vector<vector<vector<int>>> memo;
     
-        int m_;
-        int n_;
+        int m;
+        int n;
+        int target;
+        int tmp_cost = 0;
+        int max_cost = 1000001;
         
-        bool target_reached{false};
-        
-        int create_neighborhood(int h, int target)
+        int create_neighborhood(int h, int n_target, int prev_color)
         {
-            if(h >= m_){
-                target_reached = (target == 1);
-                return target == 1 ? 0 : 1000001;   
+            if (h == m && n_target == target) {
+                return 0;
+            } else if (h >= m || n_target > target) {
+                return max_cost;
+            } 
+            
+            if (memo[h][n_target - 1][prev_color] != -1) {
+                return memo[h][n_target - 1][prev_color];
             }
             
-            // if(target_reached && memo[h] != -1) return memo[h];
-            // if(memo[h][target - 1] != -1) return memo[h];
-            
-            if(houses_[h] != 0)
-            {
-                // if(h > 0 && houses_[h - 1] == houses_[h]) return memo[h] = create_neighborhood(h + 1, target);
-                // else return memo[h] = create_neighborhood(h + 1, target - 1 * (h > 0));
-                
-                int ans{};
-                if(h > 0 && houses_[h - 1] == houses_[h]) ans = create_neighborhood(h + 1, target);
-                else ans = create_neighborhood(h + 1, target - 1 * (h > 0));
-                
-                // if(target_reached){
-                //     memo[h][target - 1] = ans;
-                //     // target_reached = false;
-                // }
-                
-                return ans;
-            }
-            else
-            {
-                int chosen_c {numeric_limits<int>::max()};
-                for(auto c{0}; c < n_; ++c)
-                {
-                    houses_[h] = c + 1;
-                    
-                    if(h > 0 && c + 1 == houses_[h - 1]){
-                        chosen_c = min(chosen_c, cost_[h][c] + create_neighborhood(h + 1, target));
-                    }
-                    else {
-                        chosen_c = min(chosen_c, cost_[h][c] + create_neighborhood(h + 1, target - 1 * (h > 0)));
-                    }
+            int min_cost = max_cost;
+    
+            if (!houses[h]) {
+                for (auto i{0}; i < n; ++i) {
+                    int new_n_cnt = n_target + (h > 0 && i + 1 != prev_color +  1);
+                    min_cost = min(cost[h][i] + create_neighborhood(h + 1, new_n_cnt, i), min_cost);
                 }
-                
-                houses_[h] = 0; // backtrack
-                
-                // int ans{};
-                // if(target_reached){
-                //     memo[h][target - 1] = chosen_c;   
-                // }
-                
-                return chosen_c;
+            } else if (houses[h]) {
+                int new_n_cnt = n_target + (h > 0 && houses[h] != prev_color + 1);
+                min_cost = create_neighborhood(h + 1, new_n_cnt, houses[h] - 1); 
             }
+    
+            return memo[h][n_target - 1][prev_color] = min_cost;
         }
         
-        int minCost(vector<int>& houses, vector<vector<int>>& cost, int m, int n, int target) {
-            this->houses_ = houses;
-            // this->memo.resize(houses.size(), -1);
-            // this->memo.resize(houses.size(), vector<int>(target, -1));
-    
+        int minCost(vector<int>& houses, vector<vector<int>>& cost_i, int m, int n, int target) {
+            this->houses = houses;
+            this->cost = cost_i;
+            this->m = m;
+            this->n = n;
+            this->target = target;
             
-            this->cost_ = cost;
+            memo.resize(m, vector<vector<int>>(m, vector<int>(n, -1)));
             
-            for(auto &v : cost)
-            {
-                vector<pair<int, int>> tmp(v.size());
-                for(auto i{0}; i < v.size(); ++i)
-                {
-                    tmp[i] = make_pair(v[i], i + 1);
-                }
-                sort(tmp.begin(), tmp.end());
-                this->cost_.push_back(tmp);
-            }
+            int min_cost = create_neighborhood(0, 1, 0);
             
-            this->m_ = m;
-            this->n_ = n;
-            
-            auto min_cost = create_neighborhood(0, target);
-            
-            return min_cost < 1000000 ? min_cost : -1;
+            return min_cost != max_cost ? min_cost : -1;
         }
     };

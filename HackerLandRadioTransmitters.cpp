@@ -17,27 +17,29 @@ vector<string> split(const string &);
 
 int hackerlandRadioTransmitters(vector<int> x, int k) {
     sort(x.begin(), x.end());
-    vector<int> dp(x.size());
-    
-    int i {0};
-    int tmp {0};
-    while(true)
-    {
-        auto lb = lower_bound(x.begin(), x.end(), x[i] + 2 * k);
-        int idx = lb - x.begin();
-        
-        if(*(lb) == x[i] + 2 * k) ++idx;
-        
-        if(i > 0) tmp = dp[i - 1];
-        for(auto itr{i}; itr < idx; ++itr)
-            dp[itr] = tmp + 1;
 
-        if(lb == x.end()) break;
+    int num_tx = 0;
+    int stn = x[0];
+    int mid_stn;
+    while(true){
+        ++num_tx;
         
-        i = idx;
+        auto mid = lower_bound(x.begin(), x.end(), stn + k);
+        if (mid == x.end()) break;
+        int j = mid - x.begin();
+        
+        if(*mid > stn + k){
+            mid_stn = x[j - 1];
+        } else {
+            mid_stn = x[j];
+        }        
+        
+        auto end = upper_bound(x.begin(), x.end(), mid_stn + k);
+        if (end == x.end()) break;
+        stn = *end;
     }
     
-    return dp.back();
+    return num_tx;
 }
 
 int main()
